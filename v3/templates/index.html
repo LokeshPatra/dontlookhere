@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bonanza Scheme</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:600&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+<style>
+    /* Global Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #f5f7fa, #a2c5fe);
+      text-align: center;
+      padding: 40px 20px 100px;
+      margin: 0;
+      cursor: url('/static/cursor.png') 16 16, auto;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .brand-logo-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 999;
+    }
+
+    .brand-logo {
+      height: 40px;
+    }
+
+    .offer-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 100px;
+      gap: 40px;
+    }
+
+    .offer-logo {
+      max-width: 450px;
+      height: auto;
+    }
+
+    /* Enlarged side‐prize + faster pulse */
+    .side-prize {
+      width: 200px;
+      height: auto;
+      opacity: 0;
+      animation: fadeInPrize 1.5s ease forwards, pulse 0.7s ease-in-out 1.6s infinite;
+    }
+
+    @keyframes fadeInPrize {
+      from { opacity: 0; transform: scale(0.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.08); }
+    }
+
+    .marquee-container {
+      position: fixed;
+      bottom: 40px; /* Leave space for footer */
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 10px 0;
+      overflow: hidden;
+      z-index: 998; /* Below footer */
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: scrollLeft 20s linear infinite;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .marquee-track img {
+      height: 45px;
+      margin: 0 40px;
+    }
+
+    @keyframes scrollLeft {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Progress bar */
+    .progress-container {
+      width: 100%;
+      background: #ddd;
+      border-radius: 25px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .progress-bar {
+      height: 20px;
+      width: 0%;
+      background-color: #4caf50;
+      transition: width 0.4s ease;
+    }
+
+    .buttons {
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 14px 28px;
+      margin: 0 10px;
+      font-size: 18px;
+      background: #0077ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .generate-button {
+      background: linear-gradient(270deg, #ff00e0, #ffc800, #14ffe9, #ff00e0);
+      background-size: 600% 600%;
+      animation: rainbowBorder 4s ease infinite;
+      position: relative;
+      border-radius: 10px;
+    }
+
+    @keyframes rainbowBorder {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .generate-button.loading::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 20px; height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 3px solid white;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .previous-button {
+      background: #0077ff;
+      color: white;
+      border-radius: 10px;
+      box-shadow: 0 6px 0 #002149;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .previous-button:active {
+      transform: translateY(3px);
+      box-shadow: 0 3px 0 #083e8e;
+    }
+
+    /* Sliced Reset Button */
+        .reset-button {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1000;
+      font-size: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .reset-button::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateX(-100%) skewX(-20deg);
+      transition: transform 0.4s ease-in-out;
+      z-index: 0;
+    }
+
+    .reset-button:hover::before {
+      transform: translateX(200%) skewX(-20deg);
+    }
+
+    .reset-button span {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    .reset-button:hover {
+      color: #fff;
+      margin-left: 10px;
+    }
+
+    .reset-button:focus {
+      outline: none;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin: 20px 0 10px;
+      color: #222;
+    }
+
+    .result {
+      margin-top: 30px;
+      font-size: 24px;
+      color: #333;
+      min-height: 250px;
+      padding-bottom: 30px;
+    }
+
+    .urc-roll {
+      font-size: 36px;
+      font-weight: bold;
+      color: #0300bd;
+      letter-spacing: 2px;
+    }
+
+    .winner-name {
+      font-size: 60px;
+      margin-top: 30px;
+      font-weight: bold;
+      color: #000;
+      animation: fadeInText 2s ease-in-out forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeInText {
+      0%   { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Updated Rainbow Animation for Name */
+    .rainbow-text {
+      position: relative;
+      background: #fff;
+      mix-blend-mode: multiply;
+      overflow: hidden;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      padding: 2px 4px 6px;
+      margin: -2px -4px -6px;
+    }
+
+    .rainbow-text::before {
+      content: "";
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: -100%;
+      background: white repeating-linear-gradient(
+        90deg,
+        #14ffe9 0%,
+        #ffc800 16.66666%,
+        #ff00e0 33.33333%,
+        #14ffe9 50%
+      );
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: move 1s linear infinite;
+    }
+
+    @keyframes move {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(50%); }
+    }
+
+    @supports not (mix-blend-mode: multiply) {
+      .rainbow-text {
+        -webkit-text-fill-color: transparent;
+        background-clip: text !important;
+        background: white repeating-linear-gradient(
+          90deg,
+          #14ffe9,
+          #ffc800,
+          #ff00e0,
+          #14ffe9
+        );
+        text-shadow: none;
+      }
+      .rainbow-text::before {
+        content: none;
+      }
+    }
+
+    table {
+      margin: 20px auto;
+      width: 80%;
+      border-collapse: collapse;
+      font-size: 18px;
+      min-height: 300px;
+    }
+
+    th, td {
+      border: 1px solid #999;
+      padding: 10px;
+      text-align: center;
+      background: #fff;
+      color: #000;
+    }
+
+    th {
+      background-color: #0077ff;
+      color: white;
+    }
+
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0.25;
+    }
+
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+
+      .congrats-message {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.5rem;
+      color: rgb(165, 140, 0);
+      text-shadow: 2px 2px 6px rgba(227, 227, 227, 0.5);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .congrats-message.show {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    #welcomeOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #welcomeOverlay button {
+      font-size: 2rem;
+      padding: 20px 40px;
+      background-color: gold;
+      border: none;
+      border-radius: 10px;
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+    }
+
+    #welcomeOverlay button:hover {
+      transform: scale(1.1);
+    }
+
+    #welcomeOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7); /* dark transparent overlay */
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 1s ease;
+    }
+
+    #welcomeOverlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    
+</style>
+</head>
+<body>
+
+<div id="welcomeOverlay">
+  <button id="startButton">LET’S GO</button>
+</div>
+
+<video id="bgVideo" muted playsinline preload="auto" style="position: fixed; z-index: -1; width: 100%; height: 100%; object-fit: cover;">
+  <source src="/static/bg.mp4" type="video/mp4">
+</video>  
+
+<button onclick="toggleVideoSound()" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">🔊 Toggle Sound</button>
+
+<a href="https://www.tatatiscon.co.in" class="brand-logo-link" target="_blank" rel="noopener">
+  <img src="/static/logos/brand.png" alt="Brand Logo" class="brand-logo">
+</a>
+
+<div class="offer-wrapper">
+  <img src="/static/prizes/sample.png" alt="Prize Left" class="side-prize" id="leftPrize">
+  <img src="/static/logos/offer.png" alt="Offer Logo" class="offer-logo">
+  <img src="/static/prizes/sample.png" alt="Prize Right" class="side-prize" id="rightPrize">
+</div>
+
+<h1>✨ TATA TISCON | CONSUMER BONANZA SCHEME ✨</h1>
+
+<div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
+
+<div class="buttons">
+  <button class="generate-button" onclick="generate()">Generate</button>
+  <button class="previous-button" onclick="previous()">Previous</button>
+</div>
+
+<button class="reset-button" onclick="resetDraw()">RESET</button>
+<button class="reset-button"><span>RESET</span></button>
+
+
+<div class="result" id="result">Click "Generate" to reveal a winner</div>
+<canvas id="confetti-canvas" class="confetti"></canvas>
+
+<div id="congratsMessage" class="congrats-message"></div>
+
+<table id="winnersTable">
+  <thead><tr><th>#</th><th>Name</th><th>URC</th><th>Prize</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<div style="margin: 30px;">
+  <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Name, URC, or Prize..." style="padding: 10px; font-size: 16px; width: 300px;">
+  <button onclick="downloadCSV()" style="padding: 10px 20px; font-size: 16px; margin-left: 10px;">Download CSV</button>
+</div>
+
+<p style="margin-top: 20px; font-size: 14px; color: #666;">
+  ⌨️ Keyboard Shortcuts: [Space] Generate | [Backspace] Previous | [Esc] Reset
+</p>
+
+<div class="marquee-container">
+  <div class="marquee-track" id="marqueeTrack"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script>
+const FINALISTS = [43, 44, 45];
+const TOTAL = {{ total }};
+let history = [];
+let historyIndex = -1;
+
+function updateProgress(index) {
+  document.getElementById('progressBar').style.width = (index / TOTAL * 100) + '%';
+}
+
+function addToTable(count, name, urc, prize) {
+  const tbody = document.getElementById('winnersTable').getElementsByTagName('tbody')[0];
+  const row = tbody.insertRow(0); // Insert at the top
+  row.innerHTML = `<td>${count}</td><td>${name}</td><td>${urc}</td><td>${prize || '-'}</td>`;
+}
+
+function animateURC(urc, callback) {
+  const container = document.createElement('div');
+  container.className = 'urc-roll';
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('result').appendChild(container);
+
+  let current = '';
+  let index = urc.length - 1;
+  function rollNextDigit() {
+    if (index < 0) {
+      callback();
+      return;
+    }
+    const targetChar = urc[index];
+    let count = 0;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const interval = setInterval(() => {
+      if (count >= 5) {
+        current = targetChar + current;
+        container.innerText = current;
+        clearInterval(interval);
+        index--;
+        setTimeout(rollNextDigit, 40);
+      } else {
+        const tempChar = chars[Math.floor(Math.random() * chars.length)];
+        container.innerText = tempChar + current;
+        count++;
+      }
+    }, 40);
+  }
+  rollNextDigit();
+}
+
+function updatePrizeImages(prizeName) {
+  document.getElementById('leftPrize').src = `/static/prizes/${prizeName}.png`;
+  document.getElementById('rightPrize').src = `/static/prizes/${prizeName}.png`;
+}
+
+async function generate() {
+  const btn = document.querySelector('.generate-button');
+  btn.classList.add('loading');
+
+  confetti({ particleCount: Math.floor(Math.random() * 100 + 50), spread: 80, origin: { y: 0.6 }, zIndex: 1000 });
+
+  // Try unmuting video when user interacts
+  const video = document.getElementById('bgVideo');
+  video.muted = false;
+  video.play().catch(e => {
+    console.warn("Autoplay with sound failed:", e);
+  });
+
+  const res = await fetch('/generate');
+
+  const data = await res.json();
+
+  btn.classList.remove('loading');
+
+  if (data.status === 'done') {
+    document.getElementById('result').innerHTML = '✨ All Winners have been Revealed!';
+    return;
+  }
+
+  history.push(data);
+  historyIndex = history.length - 1;
+  updateProgress(data.index);
+
+  animateURC(data.urc, () => {
+    const resultDiv = document.getElementById('result');
+    
+  const firstName = data.name.split(' ')[0];  // Get the first name
+
+  // Winner name
+  const nameDiv = document.createElement('div');
+  nameDiv.className = 'winner-name rainbow-text';
+  nameDiv.innerHTML = `${data.name}`;
+  resultDiv.appendChild(nameDiv);
+
+  // Congrats message
+  const congratsDiv = document.createElement('div');
+  congratsDiv.className = 'congrats-message';
+  congratsDiv.innerHTML = `🎉 Congratulations, ${firstName}, you are selected! 🎉`;
+  resultDiv.appendChild(congratsDiv);
+
+  // Animate the message in
+  setTimeout(() => {
+    congratsDiv.style.opacity = 1;
+    congratsDiv.style.transform = 'scale(1)';
+  }, 200);
+
+
+    // Update side prize images
+    if (data.prize) {
+      updatePrizeImages(data.prize);
+    }
+
+    addToTable(data.index, data.name, data.urc, data.prize);
+
+    confetti({
+      particleCount: Math.floor(Math.random() * 200 + 100),
+      spread: Math.floor(Math.random() * 100 + 50),
+      origin: { y: Math.random() * 0.4 + 0.4 },
+      zIndex: 1000
+    });
+
+    if (FINALISTS.includes(data.index)) {
+      new Audio('/static/sound.mp3').play();
+    }
+  });
+}
+
+function previous() {
+  if (historyIndex <= 0) return;
+  historyIndex--;
+  const last = history[historyIndex];
+  document.getElementById('result').innerHTML = `
+    <div class="urc-roll">${last.urc}</div>
+    <div class="winner-name rainbow-text">${last.name}</div>
+    <div class="congrats-message show">Congratulations, <strong>${last.name}</strong>, you are selected!</div>
+  `;
+  updateProgress(last.index);
+
+  // Also update prize images when going back
+  if (last.prize) {
+    updatePrizeImages(last.prize);
+  }
+}
+
+async function resetDraw() {
+  if (!confirm('Are you sure you want to RESET everything? This action cannot be undone.')) return;
+  const res = await fetch('/reset');
+  const data = await res.json();
+  if (data.status === 'ok') {
+    history = [];
+    historyIndex = -1;
+    document.getElementById('winnersTable').getElementsByTagName('tbody')[0].innerHTML = '';
+    updateProgress(0);
+    document.getElementById('result').innerText = 'Draw has been reset. Click "Generate" to start again.';
+    updatePrizeImages('sample');
+  }
+}
+
+function downloadCSV() {
+  window.location.href = '/download';
+}
+
+function filterTable() {
+  const input = document.getElementById("searchInput").value.toUpperCase();
+  const trs = document.getElementById("winnersTable").getElementsByTagName("tr");
+  for (let i = 1; i < trs.length; i++) {
+    const tds = trs[i].getElementsByTagName("td");
+    let show = false;
+    for (let j = 1; j < tds.length; j++) {
+      if (tds[j].innerText.toUpperCase().includes(input)) {
+        show = true;
+        break;
+      }
+    }
+    trs[i].style.display = show ? "" : "none";
+  }
+}
+
+document.addEventListener('keydown', function (event) {
+  if (event.code === 'Space') { event.preventDefault(); generate(); }
+  else if (event.code === 'Backspace') { event.preventDefault(); previous(); }
+  else if (event.code === 'Escape') { resetDraw(); }
+});
+
+function toggleVideoSound() {
+  const video = document.getElementById('bgVideo');
+  video.muted = !video.muted;
+}
+
+// Dynamically populate marquee with enough logos
+const marquee = document.getElementById('marqueeTrack');
+const logoSrc = '/static/logos/company.png';
+const logoWidth = 160;
+const logoCount = Math.ceil(window.innerWidth / logoWidth) + 1;
+
+for (let j = 0; j < 2; j++) {
+  for (let i = 0; i < logoCount; i++) {
+    const img = document.createElement('img');
+    img.src = logoSrc;
+    img.alt = "Company Logo";
+    img.style.height = "45px";
+    img.style.margin = "0 40px";
+    marquee.appendChild(img);
+  }
+}
+
+const bgVideo = document.getElementById('bgVideo');
+bgVideo.addEventListener('timeupdate', function () {
+  if (bgVideo.currentTime >= 262.8) {
+    bgVideo.currentTime = 0;
+    bgVideo.play();
+  }
+});
+
+document.getElementById('startButton').addEventListener('click', async () => {
+  const overlay = document.getElementById('welcomeOverlay');
+  const video = document.getElementById('bgVideo');
+
+  // Request fullscreen
+  if (!document.fullscreenElement) {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch (err) {
+      console.warn('Fullscreen request failed:', err);
+    }
+  }
+
+  // Start video from beginning, unmute, and play
+  try {
+    video.currentTime = 0;
+    video.muted = false;
+    await video.play();
+  } catch (err) {
+    console.warn('Autoplay failed:', err);
+  }
+
+  // Fade out the overlay
+  overlay.classList.add('hidden');
+  setTimeout(() => {
+    overlay.style.display = 'none';
+  }, 1000); // match the CSS transition duration
+});
+
+document.getElementById('year').textContent = new Date().getFullYear();
+
+</script>
+
+<footer style="
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 10px 0;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  z-index: 1000;  /* Make sure this is higher than the marquee */
+">
+  Made by <a href="https://lighxlk.github.io" target="_blank" style="color: #c2f7d8; text-decoration: none;">light</a>
+  &nbsp;|&nbsp; © TSA <span id="year"></span>
+</footer>
+
+</body>
+</html>
